@@ -13,6 +13,12 @@ app.use(compression());
 winston.remove(winston.transports.Console);
 winston.add(winston.transports.Console, {'timestamp': true});
 
+var router = express.Router();
+
+router.get('/', function (req, res, next) {
+    res.json({status: 'UP'});
+});
+
 for (let prop in endpoints.types) {
     if (endpoints.types.hasOwnProperty(prop)) {
         let ffmpegParams = endpoints.types[prop];
@@ -139,11 +145,6 @@ for (let prop in endpoints.types) {
     }
 }
 
-require('express-readme')(app, {
-    filename: 'README.md',
-    routes: ['/', '/readme'],
-});
-
 const server = app.listen(consts.port, function() {
     let host = server.address().address;
     let port = server.address().port;
@@ -162,6 +163,8 @@ server.on('connection', function(socket) {
     socket.server.timeout = consts.timeout;
     server.keepAliveTimeout = consts.timeout;
 });
+
+app.use("/health", router);
 
 app.use(function(req, res, next) {
   res.status(404).send(JSON.stringify({error: 'route not available'})+'\n');
